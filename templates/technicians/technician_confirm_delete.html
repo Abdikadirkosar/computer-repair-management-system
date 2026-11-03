@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Technician{% endblock %}
+{% block page_title %}Delete Technician{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:500px;">
+    <div class="card-header"><h3>Confirm Delete</h3></div>
+    <div class="card-body">
+        <div class="alert alert-error"><strong>Warning!</strong></div>
+        <p>Delete technician <strong>{{ technician.name }}</strong>?</p>
+        <p style="color:#64748b; font-size:13px; margin-top:8px;">Their repair records will remain but will have no assigned technician.</p>
+        <form method="post" style="margin-top:20px;">
+            {% csrf_token %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                <a href="{% url 'technicians:technician_detail' technician.pk %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

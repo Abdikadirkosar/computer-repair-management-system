@@ -1,0 +1,130 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %} | CRMS - Computer Repair Shop</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">💻</div>
+                <div class="brand-info">
+                    <h1>CRMS</h1>
+                    <div class="subtitle">Repair Management</div>
+                </div>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li class="{% if request.resolver_match.url_name == 'dashboard' or request.resolver_match.url_name == 'dashboard_alt' %}active{% endif %}">
+                    <a href="{% url 'dashboard' %}">
+                        <span class="nav-icon">📊</span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="{% if request.resolver_match.app_name == 'customers' %}active{% endif %}">
+                    <a href="{% url 'customers:customer_list' %}">
+                        <span class="nav-icon">👥</span>
+                        <span>Customers</span>
+                    </a>
+                </li>
+                <li class="{% if request.resolver_match.app_name == 'devices' %}active{% endif %}">
+                    <a href="{% url 'devices:device_list' %}">
+                        <span class="nav-icon">💻</span>
+                        <span>Devices</span>
+                    </a>
+                </li>
+                <li class="{% if request.resolver_match.app_name == 'repairs' %}active{% endif %}">
+                    <a href="{% url 'repairs:repair_list' %}">
+                        <span class="nav-icon">🔧</span>
+                        <span>Repairs</span>
+                    </a>
+                </li>
+                <li class="{% if request.resolver_match.app_name == 'technicians' %}active{% endif %}">
+                    <a href="{% url 'technicians:technician_list' %}">
+                        <span class="nav-icon">👨‍🔧</span>
+                        <span>Technicians</span>
+                    </a>
+                </li>
+                <li class="{% if request.resolver_match.app_name == 'payments' %}active{% endif %}">
+                    <a href="{% url 'payments:payment_list' %}">
+                        <span class="nav-icon">💳</span>
+                        <span>Payments</span>
+                    </a>
+                </li>
+                <li class="{% if request.resolver_match.app_name == 'expenses' %}active{% endif %}">
+                    <a href="{% url 'expenses:expense_list' %}">
+                        <span class="nav-icon">📉</span>
+                        <span>Expenses</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user-card">
+                    <div class="user-avatar">
+                        {{ request.user.username|slice:":2" }}
+                    </div>
+                    <div class="user-details">
+                        <div class="user-name">{{ request.user.username }}</div>
+                        <span class="user-role-badge">
+                            {% if request.user.is_staff %}Admin{% else %}Technician{% endif %}
+                        </span>
+                    </div>
+                    <a href="{% url 'password_change' %}" title="Change Password" style="color:#94a3b8; font-size:16px; text-decoration:none;">🔑</a>
+                </div>
+                <form action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="sidebar-logout-btn">
+                        <span>🚪</span>
+                        <span>Sign Out</span>
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+            <!-- Topbar Navigation -->
+            <header class="topbar">
+                <div class="topbar-title">
+                    <h2>{% block page_title %}Dashboard{% endblock %}</h2>
+                </div>
+                <div class="topbar-actions">
+                    <a href="{% url 'repairs:repair_create' %}" class="btn btn-primary">
+                        <span>+</span>
+                        <span>New Repair</span>
+                    </a>
+                    <a href="{% url 'customers:customer_create' %}" class="btn btn-secondary">
+                        <span>+</span>
+                        <span>New Customer</span>
+                    </a>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <main class="content-container">
+                {% if messages %}
+                    <ul class="messages">
+                        {% for message in messages %}
+                            <li class="alert alert-{{ message.tags }}">
+                                <span>🔔</span>
+                                <span>{{ message }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

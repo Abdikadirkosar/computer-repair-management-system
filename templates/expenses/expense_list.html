@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Expenses{% endblock %}
+{% block page_title %}Shop Expenses{% endblock %}
+
+{% block content %}
+
+<!-- Financial Summary Cards -->
+<div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom:28px;">
+    <div class="stat-card revenue">
+        <div class="stat-card-header">
+            <span class="stat-title">Total Revenue</span>
+            <div class="stat-icon green">💰</div>
+        </div>
+        <div class="stat-value">${{ total_revenue }}</div>
+        <div class="stat-footer">All payments received</div>
+    </div>
+    <div class="stat-card" style="border-color:#fecaca;">
+        <div class="stat-card-header">
+            <span class="stat-title">Total Expenses</span>
+            <div class="stat-icon" style="background:#fee2e2; color:#dc2626;">📉</div>
+        </div>
+        <div class="stat-value" style="color:#dc2626;">${{ total_expenses }}</div>
+        <div class="stat-footer">Filtered period spending</div>
+    </div>
+    <div class="stat-card" style="border-color:{% if net_profit >= 0 %}#bbf7d0{% else %}#fecaca{% endif %};">
+        <div class="stat-card-header">
+            <span class="stat-title">Net Profit</span>
+            <div class="stat-icon" style="background:{% if net_profit >= 0 %}#dcfce7{% else %}#fee2e2{% endif %}; color:{% if net_profit >= 0 %}#16a34a{% else %}#dc2626{% endif %};">
+                {% if net_profit >= 0 %}📈{% else %}📉{% endif %}
+            </div>
+        </div>
+        <div class="stat-value" style="color:{% if net_profit >= 0 %}#16a34a{% else %}#dc2626{% endif %};">${{ net_profit }}</div>
+        <div class="stat-footer">Revenue − Expenses</div>
+    </div>
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar">
+    <form method="get" class="search-box">
+        <span>🔍</span>
+        <input type="text" name="q" value="{{ query }}" placeholder="Search expenses...">
+        <select name="category" class="form-control" style="width:auto; padding:6px 12px; margin:0 4px; box-shadow:none;">
+            <option value="">All Categories</option>
+            {% for val, label in category_choices %}
+            <option value="{{ val }}" {% if category_filter == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+        {% if query or category_filter %}
+            <a href="{% url 'expenses:expense_list' %}" class="btn btn-secondary btn-sm">✕ Clear</a>
+        {% endif %}
+    </form>
+    <a href="{% url 'expenses:expense_create' %}" class="btn btn-primary">
+        <span>+</span>
+        <span>Add Expense</span>
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div>
+            <h3>Expense Records ({{ expenses|length }})</h3>
+            <p style="font-size:13px; color:#64748b; margin-top:2px;">Shop operating costs and purchases</p>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th style="width:140px;">Category</th>
+                    <th style="width:120px;">Amount</th>
+                    <th style="width:120px;">Date</th>
+                    <th>Notes</th>
+                    <th style="width:150px; text-align:right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in expenses %}
+                <tr>
+                    <td>
+                        <div style="font-weight:600; color:#0f172a;">{{ expense.title }}</div>
+                    </td>
+                    <td>
+                        <span class="badge badge-normal">{{ expense.category }}</span>
+                    </td>
+                    <td>
+                        <strong style="color:#dc2626; font-size:15px;">${{ expense.amount }}</strong>
+                    </td>
+                    <td style="color:#64748b; font-size:13px;">{{ expense.date|date:"d/m/Y" }}</td>
+                    <td style="color:#64748b; font-size:13px;">{{ expense.notes|truncatechars:50|default:"—" }}</td>
+                    <td style="text-align:right;">
+                        <div class="table-actions" style="justify-content:flex-end;">
+                            <a href="{% url 'expenses:expense_update' expense.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+                            <a href="{% url 'expenses:expense_delete' expense.pk %}" class="btn btn-danger btn-sm">Delete</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align:center; padding:36px; color:#64748b;">
+                        <div style="font-size:24px; margin-bottom:8px;">📋</div>
+                        No expenses recorded yet.<br>
+                        <a href="{% url 'expenses:expense_create' %}" class="btn btn-primary btn-sm" style="margin-top:12px;">+ Add First Expense</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

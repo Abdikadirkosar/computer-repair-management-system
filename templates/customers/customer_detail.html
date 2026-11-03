@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}{{ customer.name }}{% endblock %}
+{% block page_title %}Customer Detail{% endblock %}
+
+{% block content %}
+<div style="display:flex; gap:16px; align-items:center; margin-bottom:24px; flex-wrap:wrap;">
+    <a href="{% url 'customers:customer_list' %}" class="btn btn-secondary btn-sm">← Back to Customers</a>
+    <a href="{% url 'customers:customer_update' customer.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+    <a href="{% url 'customers:customer_delete' customer.pk %}" class="btn btn-danger btn-sm">Delete</a>
+    <a href="{% url 'devices:device_create' %}?customer={{ customer.pk }}" class="btn btn-primary btn-sm">+ Add Device</a>
+    <a href="{% url 'repairs:repair_create' %}?customer={{ customer.pk }}" class="btn btn-primary btn-sm">+ New Repair</a>
+</div>
+
+<div class="card" style="margin-bottom:24px;">
+    <div class="card-header">
+        <h3>{{ customer.name }}</h3>
+    </div>
+    <div class="card-body">
+        <div class="info-list">
+            <div class="info-item">
+                <div class="info-label">Phone</div>
+                <div class="info-value">{{ customer.phone }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Email</div>
+                <div class="info-value">{{ customer.email|default:"—" }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Address</div>
+                <div class="info-value">{{ customer.address|default:"—" }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Customer Since</div>
+                <div class="info-value">{{ customer.created_at|date:"d/m/Y" }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Devices Section -->
+<div class="card" style="margin-bottom:24px;">
+    <div class="card-header">
+        <h3>Devices ({{ devices|length }})</h3>
+        <a href="{% url 'devices:device_create' %}?customer={{ customer.pk }}" class="btn btn-primary btn-sm">+ Add Device</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Brand</th>
+                    <th>Model</th>
+                    <th>Serial No.</th>
+                    <th>Problem</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for device in devices %}
+                <tr>
+                    <td>{{ device.device_type }}</td>
+                    <td><strong>{{ device.brand }}</strong></td>
+                    <td>{{ device.model }}</td>
+                    <td>{{ device.serial_number|default:"—" }}</td>
+                    <td>{{ device.problem|truncatechars:50 }}</td>
+                    <td>
+                        <div class="table-actions">
+                            <a href="{% url 'devices:device_detail' device.pk %}" class="btn btn-secondary btn-sm">View</a>
+                            <a href="{% url 'devices:device_update' device.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align:center; padding:20px; color:#64748b;">
+                        No devices added yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Repairs Section -->
+<div class="card">
+    <div class="card-header">
+        <h3>Repair History ({{ repairs|length }})</h3>
+        <a href="{% url 'repairs:repair_create' %}?customer={{ customer.pk }}" class="btn btn-primary btn-sm">+ New Repair</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Repair #</th>
+                    <th>Device</th>
+                    <th>Status</th>
+                    <th>Cost</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for repair in repairs %}
+                <tr>
+                    <td><strong>{{ repair.repair_number }}</strong></td>
+                    <td>{{ repair.device.brand }} {{ repair.device.model }}</td>
+                    <td><span class="badge badge-{{ repair.status|lower }}">{{ repair.status }}</span></td>
+                    <td>${{ repair.cost }}</td>
+                    <td>{{ repair.received_date|date:"d/m/Y" }}</td>
+                    <td>
+                        <a href="{% url 'repairs:repair_detail' repair.pk %}" class="btn btn-secondary btn-sm">View</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align:center; padding:20px; color:#64748b;">
+                        No repairs yet for this customer.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

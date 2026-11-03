@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}{% if is_technician_view %}My Assigned Repairs{% else %}System Overview{% endif %}{% endblock %}
+
+{% block content %}
+
+{% if is_technician_view %}
+<div class="alert alert-info" style="margin-bottom:24px;">
+    <span>👨‍🔧</span>
+    <span>You are viewing <strong>your assigned repairs</strong>. Contact an admin to manage customers, devices, or payments.</span>
+</div>
+{% endif %}
+
+{% if not is_technician_view %}
+<!-- Statistics Cards Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-title">Total Customers</span>
+            <div class="stat-icon blue">👥</div>
+        </div>
+        <div class="stat-value">{{ total_customers }}</div>
+        <div class="stat-footer">Registered clients</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-title">Total Devices</span>
+            <div class="stat-icon purple">💻</div>
+        </div>
+        <div class="stat-value">{{ total_devices }}</div>
+        <div class="stat-footer">Customer hardware</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-title">Total Repairs</span>
+            <div class="stat-icon indigo">🔧</div>
+        </div>
+        <div class="stat-value">{{ total_repairs }}</div>
+        <div class="stat-footer">Lifetime jobs logged</div>
+    </div>
+
+    <div class="stat-card revenue">
+        <div class="stat-card-header">
+            <span class="stat-title">Total Revenue</span>
+            <div class="stat-icon green">💰</div>
+        </div>
+        <div class="stat-value">${{ total_revenue }}</div>
+        <div class="stat-footer">Payments collected</div>
+    </div>
+
+    <div class="stat-card pending">
+        <div class="stat-card-header">
+            <span class="stat-title">Pending</span>
+            <div class="stat-icon amber">⏳</div>
+        </div>
+        <div class="stat-value">{{ pending_repairs }}</div>
+        <div class="stat-footer">Awaiting diagnosis</div>
+    </div>
+
+    <div class="stat-card repairing">
+        <div class="stat-card-header">
+            <span class="stat-title">In Repair</span>
+            <div class="stat-icon orange">⚙️</div>
+        </div>
+        <div class="stat-value">{{ repairing_count }}</div>
+        <div class="stat-footer">Currently working</div>
+    </div>
+
+    <div class="stat-card completed">
+        <div class="stat-card-header">
+            <span class="stat-title">Completed</span>
+            <div class="stat-icon emerald">✅</div>
+        </div>
+        <div class="stat-value">{{ completed_repairs }}</div>
+        <div class="stat-footer">Fixed & ready</div>
+    </div>
+
+    <div class="stat-card" style="border-color:{% if net_profit >= 0 %}#bbf7d0{% else %}#fecaca{% endif %};">
+        <div class="stat-card-header">
+            <span class="stat-title">Net Profit</span>
+            <div class="stat-icon" style="background:{% if net_profit >= 0 %}#dcfce7{% else %}#fee2e2{% endif %}; color:{% if net_profit >= 0 %}#16a34a{% else %}#dc2626{% endif %};">
+                {% if net_profit >= 0 %}📈{% else %}📉{% endif %}
+            </div>
+        </div>
+        <div class="stat-value" style="color:{% if net_profit >= 0 %}#16a34a{% else %}#dc2626{% endif %};">
+            ${{ net_profit }}
+        </div>
+        <div class="stat-footer">Revenue − Expenses</div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Recent Repairs Table Card -->
+<div class="card">
+    <div class="card-header">
+        <div>
+            <h3>{% if is_technician_view %}My Assigned Repairs{% else %}Recent Repairs{% endif %}</h3>
+            <p style="font-size:13px; color:#64748b; margin-top:2px;">
+                {% if is_technician_view %}Repair jobs currently assigned to you{% else %}Latest repair orders logged in the shop{% endif %}
+            </p>
+        </div>
+        {% if not is_technician_view %}
+        <a href="{% url 'repairs:repair_list' %}" class="btn btn-secondary btn-sm">View All Repairs →</a>
+        {% endif %}
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width:120px;">Repair #</th>
+                    <th>Customer</th>
+                    <th>Device</th>
+                    {% if not is_technician_view %}<th>Technician</th>{% endif %}
+                    <th style="width:100px;">Priority</th>
+                    <th style="width:120px;">Status</th>
+                    <th style="width:90px;">Cost</th>
+                    <th style="width:110px;">Date</th>
+                    <th style="width:90px; text-align:right;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for repair in recent_repairs %}
+                <tr>
+                    <td>
+                        <span style="font-family:monospace; font-weight:700; color:#2563eb; background:#eff6ff; padding:3px 8px; border-radius:4px; border:1px solid #dbeafe;">
+                            {{ repair.repair_number }}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="font-weight:600; color:#0f172a;">{{ repair.customer.name }}</div>
+                        <div style="font-size:12px; color:#64748b;">{{ repair.customer.phone }}</div>
+                    </td>
+                    <td>
+                        <div style="font-weight:600;">{{ repair.device.brand }} {{ repair.device.model }}</div>
+                        <div style="font-size:12px; color:#64748b;">{{ repair.device.device_type }}</div>
+                    </td>
+                    {% if not is_technician_view %}
+                    <td>
+                        {% if repair.technician %}
+                            <span style="font-weight:500;">{{ repair.technician.name }}</span>
+                        {% else %}
+                            <span style="color:#94a3b8; font-style:italic;">Unassigned</span>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                    <td><span class="badge badge-{{ repair.priority|lower }}">{{ repair.priority }}</span></td>
+                    <td><span class="badge badge-{{ repair.status|lower }}">{{ repair.status }}</span></td>
+                    <td><strong style="color:#0f172a; font-size:14px;">${{ repair.cost }}</strong></td>
+                    <td style="color:#64748b; font-size:13px;">{{ repair.received_date|date:"d/m/Y" }}</td>
+                    <td style="text-align:right;">
+                        <a href="{% url 'repairs:repair_detail' repair.pk %}" class="btn btn-secondary btn-sm">View</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" style="text-align:center; padding:36px; color:#64748b;">
+                        <div style="font-size:24px; margin-bottom:8px;">🔧</div>
+                        {% if is_technician_view %}No repairs assigned to you yet.{% else %}No repairs recorded yet.{% endif %}<br>
+                        {% if not is_technician_view %}
+                        <a href="{% url 'repairs:repair_create' %}" class="btn btn-primary btn-sm" style="margin-top:12px;">+ Create First Repair</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

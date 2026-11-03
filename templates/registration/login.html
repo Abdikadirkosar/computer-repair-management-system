@@ -1,0 +1,53 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Computer Repair Management System</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body style="background-color: #f1f5f9;">
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-brand">
+                <h1>CRMS</h1>
+                <p>Computer Repair Management System</p>
+            </div>
+
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li class="alert alert-{{ message.tags }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            {% if form.errors %}
+                <div class="alert alert-error">
+                    Invalid username or password. Please try again.
+                </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_username">Username</label>
+                    <input type="text" name="username" autofocus required id="id_username" class="form-control" placeholder="Enter username">
+                </div>
+
+                <div class="form-group">
+                    <label for="id_password">Password</label>
+                    <input type="password" name="password" required id="id_password" class="form-control" placeholder="Enter password">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 12px; padding: 10px;">Sign In</button>
+            </form>
+
+            <div style="margin-top: 24px; text-align: center; font-size: 12px; color: #64748b;">
+                <p>Default accounts: <strong>admin</strong> / <strong>admin123</strong> or <strong>tech</strong> / <strong>tech123</strong></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

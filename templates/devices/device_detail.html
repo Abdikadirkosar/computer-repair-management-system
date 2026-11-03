@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}{{ device.brand }} {{ device.model }}{% endblock %}
+{% block page_title %}Device Detail{% endblock %}
+
+{% block content %}
+<div style="display:flex; gap:12px; align-items:center; margin-bottom:24px; flex-wrap:wrap;">
+    <a href="{% url 'devices:device_list' %}" class="btn btn-secondary btn-sm">← Back to Devices</a>
+    <a href="{% url 'devices:device_update' device.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+    <a href="{% url 'devices:device_delete' device.pk %}" class="btn btn-danger btn-sm">Delete</a>
+    <a href="{% url 'repairs:repair_create' %}?customer={{ device.customer.pk }}&device={{ device.pk }}" class="btn btn-primary btn-sm">+ New Repair</a>
+</div>
+
+<div class="card" style="margin-bottom:24px;">
+    <div class="card-header">
+        <h3>{{ device.brand }} {{ device.model }}</h3>
+        <span class="badge badge-normal">{{ device.device_type }}</span>
+    </div>
+    <div class="card-body">
+        <div class="info-list">
+            <div class="info-item">
+                <div class="info-label">Customer</div>
+                <div class="info-value"><a href="{% url 'customers:customer_detail' device.customer.pk %}">{{ device.customer.name }}</a></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Serial Number</div>
+                <div class="info-value">{{ device.serial_number|default:"—" }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Condition</div>
+                <div class="info-value">{{ device.condition|default:"—" }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Added On</div>
+                <div class="info-value">{{ device.created_at|date:"d/m/Y" }}</div>
+            </div>
+            <div class="info-item" style="grid-column: 1 / -1;">
+                <div class="info-label">Reported Problem</div>
+                <div class="info-value">{{ device.problem }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Repairs for this Device ({{ repairs|length }})</h3>
+        <a href="{% url 'repairs:repair_create' %}?customer={{ device.customer.pk }}&device={{ device.pk }}" class="btn btn-primary btn-sm">+ New Repair</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Repair #</th>
+                    <th>Status</th>
+                    <th>Technician</th>
+                    <th>Cost</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for repair in repairs %}
+                <tr>
+                    <td><strong>{{ repair.repair_number }}</strong></td>
+                    <td><span class="badge badge-{{ repair.status|lower }}">{{ repair.status }}</span></td>
+                    <td>{{ repair.technician.name|default:"—" }}</td>
+                    <td>${{ repair.cost }}</td>
+                    <td>{{ repair.received_date|date:"d/m/Y" }}</td>
+                    <td><a href="{% url 'repairs:repair_detail' repair.pk %}" class="btn btn-secondary btn-sm">View</a></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align:center; padding:20px; color:#64748b;">
+                        No repairs yet for this device.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

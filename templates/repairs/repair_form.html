@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:20px;">
+    <a href="{% url 'repairs:repair_list' %}" class="btn btn-secondary btn-sm">← Back to Repairs</a>
+</div>
+
+<div class="card">
+    <div class="card-header"><h3>{{ title }}</h3></div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                {% for error in form.non_field_errors %}
+                    <div class="alert alert-error">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="form-grid">
+                {% for field in form %}
+                    <div class="form-group {% if field.name == 'problem' or field.name == 'diagnosis' or field.name == 'repair_notes' %}full-width{% endif %}">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span style="color:#dc2626;">*</span>{% endif %}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <div class="form-help">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <div class="form-error">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="form-actions" style="margin-top:20px;">
+                <button type="submit" class="btn btn-primary">{{ button_text }}</button>
+                <a href="{% url 'repairs:repair_list' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Dynamic device filtering by customer selection
+const customerSelect = document.getElementById('id_customer');
+const deviceSelect = document.getElementById('id_device');
+
+if (customerSelect && deviceSelect) {
+    customerSelect.addEventListener('change', function () {
+        const customerId = this.value;
+        deviceSelect.innerHTML = '<option value="">---------</option>';
+
+        if (customerId) {
+            fetch(`/repairs/api/customer-devices/?customer_id=${customerId}`)
+                .then(res => res.json())
+                .then(data => {
+                    data.devices.forEach(device => {
+                        const option = document.createElement('option');
+                        option.value = device.id;
+                        option.textContent = `${device.brand} ${device.model} (${device.device_type})`;
+                        deviceSelect.appendChild(option);
+                    });
+                });
+        }
+    });
+}
+</script>
+{% endblock %}

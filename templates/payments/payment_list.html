@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Payments{% endblock %}
+{% block page_title %}Payments & Revenue{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <form method="get" class="search-box">
+        <span>🔍</span>
+        <input type="text" name="q" value="{{ query }}" placeholder="Search by repair #, customer or payment method...">
+        <button type="submit" class="btn btn-secondary btn-sm">Search</button>
+        {% if query %}
+            <a href="{% url 'payments:payment_list' %}" class="btn btn-secondary btn-sm">✕ Clear</a>
+        {% endif %}
+    </form>
+    <a href="{% url 'payments:payment_create_general' %}" class="btn btn-primary">
+        <span>+</span>
+        <span>Record Payment</span>
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div>
+            <h3>Payment Transactions ({{ payments|length }})</h3>
+            <p style="font-size: 13px; color: #64748b; margin-top: 2px;">Financial records of customer payments received</p>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width: 70px;">#</th>
+                    <th style="width: 130px;">Repair #</th>
+                    <th>Customer</th>
+                    <th>Device</th>
+                    <th style="width: 120px;">Amount Paid</th>
+                    <th style="width: 120px;">Method</th>
+                    <th style="width: 120px;">Payment Date</th>
+                    {% if request.user.is_staff %}<th style="width: 100px; text-align: right;">Action</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr>
+                    <td style="color: #64748b; font-weight: 600;">#{{ payment.id }}</td>
+                    <td>
+                        <a href="{% url 'repairs:repair_detail' payment.repair.pk %}" style="font-family: monospace; font-weight: 700; color: #2563eb; background: #eff6ff; padding: 3px 8px; border-radius: 4px; border: 1px solid #dbeafe;">
+                            {{ payment.repair.repair_number }}
+                        </a>
+                    </td>
+                    <td>
+                        <div style="font-weight: 600; color: #0f172a;">{{ payment.repair.customer.name }}</div>
+                        <div style="font-size: 12px; color: #64748b;">{{ payment.repair.customer.phone }}</div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 500;">{{ payment.repair.device.brand }} {{ payment.repair.device.model }}</div>
+                    </td>
+                    <td>
+                        <strong style="color: #16a34a; font-size: 15px;">${{ payment.amount }}</strong>
+                    </td>
+                    <td>
+                        <span class="badge badge-normal" style="font-weight: 600;">
+                            {{ payment.payment_method }}
+                        </span>
+                    </td>
+                    <td style="color: #64748b; font-size: 13px;">
+                        {{ payment.payment_date|date:"d/m/Y" }}
+                    </td>
+                    {% if request.user.is_staff %}
+                    <td style="text-align: right;">
+                        <a href="{% url 'payments:payment_delete' payment.pk %}" class="btn btn-danger btn-sm">Delete</a>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 36px; color: #64748b;">
+                        <div style="font-size: 24px; margin-bottom: 8px;">💳</div>
+                        No payments found.<br>
+                        <a href="{% url 'payments:payment_create_general' %}" class="btn btn-primary btn-sm" style="margin-top: 12px;">+ Record First Payment</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}{{ technician.name }}{% endblock %}
+{% block page_title %}Technician Detail{% endblock %}
+
+{% block content %}
+<div style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+    <a href="{% url 'technicians:technician_list' %}" class="btn btn-secondary btn-sm">← Back</a>
+    <a href="{% url 'technicians:technician_update' technician.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+    <a href="{% url 'technicians:technician_delete' technician.pk %}" class="btn btn-danger btn-sm">Delete</a>
+</div>
+
+<div class="card" style="margin-bottom:24px;">
+    <div class="card-header">
+        <h3>{{ technician.name }}</h3>
+        <span class="badge badge-{{ technician.status|lower }}">{{ technician.status }}</span>
+    </div>
+    <div class="card-body">
+        <div class="info-list">
+            <div class="info-item">
+                <div class="info-label">Phone</div>
+                <div class="info-value">{{ technician.phone }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Specialization</div>
+                <div class="info-value">{{ technician.specialization }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Total Repairs</div>
+                <div class="info-value">{{ repairs|length }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Joined</div>
+                <div class="info-value">{{ technician.created_at|date:"d/m/Y" }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><h3>Assigned Repairs</h3></div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Repair #</th>
+                    <th>Customer</th>
+                    <th>Device</th>
+                    <th>Status</th>
+                    <th>Cost</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for repair in repairs %}
+                <tr>
+                    <td><strong>{{ repair.repair_number }}</strong></td>
+                    <td>{{ repair.customer.name }}</td>
+                    <td>{{ repair.device.brand }} {{ repair.device.model }}</td>
+                    <td><span class="badge badge-{{ repair.status|lower }}">{{ repair.status }}</span></td>
+                    <td>${{ repair.cost }}</td>
+                    <td>{{ repair.received_date|date:"d/m/Y" }}</td>
+                    <td><a href="{% url 'repairs:repair_detail' repair.pk %}" class="btn btn-secondary btn-sm">View</a></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align:center; padding:20px; color:#64748b;">No repairs assigned yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

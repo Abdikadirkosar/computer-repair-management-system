@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}{{ repair.repair_number }}{% endblock %}
+{% block page_title %}Repair #{{ repair.repair_number }}{% endblock %}
+
+{% block content %}
+<div style="display:flex; gap:12px; align-items:center; margin-bottom:24px; flex-wrap:wrap;">
+    <a href="{% url 'repairs:repair_list' %}" class="btn btn-secondary btn-sm">← Back to Repairs</a>
+    <a href="{% url 'repairs:repair_update' repair.pk %}" class="btn btn-secondary btn-sm">✏️ Full Edit</a>
+    <a href="{% url 'payments:payment_create' repair.pk %}" class="btn btn-primary btn-sm">💳 Add Payment</a>
+    <a href="{% url 'repairs:repair_receipt' repair.pk %}" class="btn btn-secondary btn-sm">🖨️ Print Receipt</a>
+    <a href="{% url 'repairs:repair_delete' repair.pk %}" class="btn btn-danger btn-sm">Delete</a>
+</div>
+
+<div class="detail-grid">
+    <!-- Left Column: Details & Technical Actions -->
+    <div>
+        <!-- Main Info Card -->
+        <div class="card" style="margin-bottom:24px;">
+            <div class="card-header">
+                <div>
+                    <h3 style="font-family: monospace; font-size: 20px; color: #2563eb;">{{ repair.repair_number }}</h3>
+                    <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Received on {{ repair.received_date|date:"F d, Y" }}</div>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <span class="badge badge-{{ repair.priority|lower }}">{{ repair.priority }}</span>
+                    <span class="badge badge-{{ repair.status|lower }}">{{ repair.status }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="info-list">
+                    <div class="info-item">
+                        <div class="info-label">Customer</div>
+                        <div class="info-value">
+                            <a href="{% url 'customers:customer_detail' repair.customer.pk %}">{{ repair.customer.name }}</a>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Customer Phone</div>
+                        <div class="info-value">{{ repair.customer.phone }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Device</div>
+                        <div class="info-value">
+                            <a href="{% url 'devices:device_detail' repair.device.pk %}">{{ repair.device.brand }} {{ repair.device.model }}</a>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Device Type</div>
+                        <div class="info-value">{{ repair.device.device_type }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Assigned Technician</div>
+                        <div class="info-value">
+                            {% if repair.technician %}
+                                <a href="{% url 'technicians:technician_detail' repair.technician.pk %}">{{ repair.technician.name }}</a>
+                            {% else %}
+                                <span style="color:#94a3b8; font-style:italic;">Unassigned</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Serial Number</div>
+                        <div class="info-value">{{ repair.device.serial_number|default:"—" }}</div>
+                    </div>
+                    {% if repair.completed_date %}
+                    <div class="info-item">
+                        <div class="info-label">Completed Date</div>
+                        <div class="info-value">{{ repair.completed_date|date:"F d, Y" }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Problem Reported -->
+        <div class="card" style="margin-bottom:24px;">
+            <div class="card-header">
+                <h3>Reported Problem</h3>
+            </div>
+            <div class="card-body">
+                <p style="font-size: 15px; color: #1e293b; background: #f8fafc; padding: 14px 16px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                    {{ repair.problem }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Quick Status & Technician Findings Form -->
+        <div class="card" style="margin-bottom:24px; border: 1px solid #bfdbfe; background: #fdfefe;">
+            <div class="card-header" style="background: #eff6ff;">
+                <div>
+                    <h3 style="color: #1e40af;">⚡ Quick Status & Findings Update</h3>
+                    <p style="font-size: 12px; color: #3b82f6; margin-top: 2px;">Update repair progress and technical notes without leaving this page</p>
+                </div>
+            </div>
+            <div class="card-body">
+                <form action="{% url 'repairs:repair_quick_update' repair.pk %}" method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="{{ status_form.status.id_for_label }}">Current Repair Status</label>
+                        {{ status_form.status }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ status_form.diagnosis.id_for_label }}">Technical Diagnosis Findings</label>
+                        {{ status_form.diagnosis }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ status_form.repair_notes.id_for_label }}">Repair Notes & Parts Replaced</label>
+                        {{ status_form.repair_notes }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        💾 Save Progress Update
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Financials & Payments -->
+    <div>
+        <!-- Financial Summary -->
+        <div class="card" style="margin-bottom:24px;">
+            <div class="card-header">
+                <h3>Financial Summary</h3>
+            </div>
+            <div class="card-body">
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="color:#64748b; font-weight:600;">Repair Cost</span>
+                        <span style="font-size:18px; font-weight:700;">${{ repair.cost }}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="color:#64748b; font-weight:600;">Total Paid</span>
+                        <span style="font-size:18px; font-weight:700; color:#16a34a;">${{ repair.total_paid }}</span>
+                    </div>
+                    <hr style="border:none; border-top:1px solid #e2e8f0;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:700;">Balance Due</span>
+                        <span style="font-size:24px; font-weight:800; color:{% if repair.balance > 0 %}#dc2626{% else %}#16a34a{% endif %};">
+                            ${{ repair.balance }}
+                        </span>
+                    </div>
+
+                    {% if repair.is_fully_paid %}
+                        <div class="badge badge-completed" style="text-align:center; padding:10px; font-size:12px;">
+                            ✅ Fully Paid
+                        </div>
+                    {% else %}
+                        <a href="{% url 'payments:payment_create' repair.pk %}" class="btn btn-primary" style="text-align:center; width:100%; padding:10px;">
+                            💳 Record Payment
+                        </a>
+                    {% endif %}
+
+                    <a href="{% url 'repairs:repair_receipt' repair.pk %}" class="btn btn-secondary" style="text-align:center; width:100%;">
+                        🖨️ View & Print Receipt
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment History -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Payment History</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th>Date</th>
+                            {% if request.user.is_staff %}<th style="text-align:right;"></th>{% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td><strong style="color: #16a34a;">${{ payment.amount }}</strong></td>
+                            <td><span class="badge badge-normal">{{ payment.payment_method }}</span></td>
+                            <td style="font-size: 12px; color: #64748b;">{{ payment.payment_date|date:"d/m/Y" }}</td>
+                            {% if request.user.is_staff %}
+                            <td style="text-align: right;">
+                                <a href="{% url 'payments:payment_delete' payment.pk %}" class="btn btn-danger btn-sm" title="Delete record">✕</a>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" style="text-align:center; padding:24px; color:#64748b;">
+                                No payments recorded yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

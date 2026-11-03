@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Record Payment{% endblock %}
+{% block page_title %}Record Customer Payment{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+    <a href="{% url 'payments:payment_list' %}" class="btn btn-secondary btn-sm">← Back to Payments</a>
+</div>
+
+<div class="card" style="max-width: 520px;">
+    <div class="card-header">
+        <div>
+            <h3>Record Payment</h3>
+            <p style="font-size: 12px; color: #64748b; margin-top: 2px;">Apply customer payment to a repair job</p>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                {% for error in form.non_field_errors %}
+                    <div class="alert alert-error">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}{% if field.field.required %} <span style="color:#dc2626;">*</span>{% endif %}
+                    </label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <div class="form-help">{{ field.help_text }}</div>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div class="form-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save Payment Record</button>
+                <a href="{% url 'payments:payment_list' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

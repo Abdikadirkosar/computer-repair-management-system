@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Devices{% endblock %}
+{% block page_title %}Customer Devices{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <form method="get" class="search-box">
+        <span>🔍</span>
+        <input type="text" name="q" value="{{ query }}" placeholder="Search by brand, model or serial number...">
+        <button type="submit" class="btn btn-secondary btn-sm">Search</button>
+        {% if query %}
+            <a href="{% url 'devices:device_list' %}" class="btn btn-secondary btn-sm">✕ Clear</a>
+        {% endif %}
+    </form>
+    <a href="{% url 'devices:device_create' %}" class="btn btn-primary">
+        <span>+</span>
+        <span>Register Device</span>
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div>
+            <h3>All Registered Devices ({{ devices|length }})</h3>
+            <p style="font-size: 13px; color: #64748b; margin-top: 2px;">Hardware brought in by clients for service</p>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width: 70px;">#</th>
+                    <th style="width: 100px;">Type</th>
+                    <th>Brand & Model</th>
+                    <th>Serial Number</th>
+                    <th>Owner (Customer)</th>
+                    <th>Reported Issue</th>
+                    <th style="width: 80px; text-align: center;">Repairs</th>
+                    <th style="width: 160px; text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for device in devices %}
+                <tr>
+                    <td style="color: #64748b; font-weight: 600;">#{{ device.id }}</td>
+                    <td>
+                        <span class="badge badge-normal" style="font-weight: 600;">{{ device.device_type }}</span>
+                    </td>
+                    <td>
+                        <a href="{% url 'devices:device_detail' device.pk %}" style="font-weight: 700; color: #0f172a; font-size: 14px;">
+                            {{ device.brand }} {{ device.model }}
+                        </a>
+                        {% if device.condition %}
+                            <div style="font-size: 11px; color: #64748b;">Cond: {{ device.condition }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if device.serial_number %}
+                            <span style="font-family: monospace; font-size: 12px; background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">
+                                {{ device.serial_number }}
+                            </span>
+                        {% else %}
+                            <span style="color: #94a3b8;">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'customers:customer_detail' device.customer.pk %}" style="font-weight: 600; color: #2563eb;">
+                            {{ device.customer.name }}
+                        </a>
+                        <div style="font-size: 12px; color: #64748b;">{{ device.customer.phone }}</div>
+                    </td>
+                    <td>
+                        <span style="color: #334155;">{{ device.problem|truncatechars:45 }}</span>
+                    </td>
+                    <td style="text-align: center;">
+                        <span class="badge badge-normal">{{ device.repairs.count }}</span>
+                    </td>
+                    <td style="text-align: right;">
+                        <div class="table-actions" style="justify-content: flex-end;">
+                            <a href="{% url 'devices:device_detail' device.pk %}" class="btn btn-secondary btn-sm">View</a>
+                            <a href="{% url 'devices:device_update' device.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+                            <a href="{% url 'devices:device_delete' device.pk %}" class="btn btn-danger btn-sm">Delete</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 36px; color: #64748b;">
+                        <div style="font-size: 24px; margin-bottom: 8px;">💻</div>
+                        No devices found.<br>
+                        <a href="{% url 'devices:device_create' %}" class="btn btn-primary btn-sm" style="margin-top: 12px;">+ Add First Device</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
